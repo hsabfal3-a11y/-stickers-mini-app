@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>متجر الملصقات</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Tahoma, Arial, sans-serif;
+      background-color: var(--tg-theme-bg-color, #18222d);
+      color: var(--tg-theme-text-color, #ffffff);
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    .box {
+      background-color: var(--tg-theme-secondary-bg-color, #22303c);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background-color: var(--tg-theme-button-color, #2ea6ff);
+      color: var(--tg-theme-button-text-color, #ffffff);
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .note {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎨 حزم الملصقات</h2>
+  <p class="note">اختر الحزمة لإضافتها إلى حسابك في تيليجرام</p>
+
+  <div class="box">
+    <h3>حزمة ملصقات أولى</h3>
+    <button class="btn" onclick="claimPack('https://t.me/addstickers/Animals')">
+      سحب الملصقات
+    </button>
+  </div>
+
+  <div class="box">
+    <h3>حزمة ملصقات ثانية</h3>
+    <button class="btn" onclick="claimPack('https://t.me/addstickers/MemePack')">
+      سحب الملصقات
+    </button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    function claimPack(url) {
+      tg.openTelegramLink(url);
+    }
+  </script>
+</body>
+</html>
