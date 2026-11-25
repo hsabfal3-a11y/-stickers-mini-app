@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>متجر الملصقات</title>
+  <title>Sticker Drop</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
   <style>
     body {
-      font-family: Tahoma, Arial, sans-serif;
-      background-color: var(--tg-theme-bg-color, #18222d);
+      font-family: Arial, Tahoma, sans-serif;
+      background-color: var(--tg-theme-bg-color, #182222);
       color: var(--tg-theme-text-color, #ffffff);
       margin: 0;
       padding: 20px;
@@ -21,50 +22,71 @@
       margin-bottom: 14px;
     }
     .btn {
-      display: block;
+      display: inline-block;
       width: 100%;
+      box-sizing: border-box;
+      padding: 12px 16px;
       margin-top: 10px;
-      padding: 12px;
       border: none;
       border-radius: 10px;
       background-color: var(--tg-theme-button-color, #2ea6ff);
       color: var(--tg-theme-button-text-color, #ffffff);
-      font-size: 15px;
+      font-size: 16px;
       font-weight: bold;
       cursor: pointer;
     }
-    .note {
-      font-size: 13px;
-      opacity: 0.8;
-      margin-top: 8px;
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      opacity: 0.9;
     }
   </style>
 </head>
 <body>
-  <h2>🎨 حزم الملصقات</h2>
-  <p class="note">اختر الحزمة لإضافتها إلى حسابك في تيليجرام</p>
-
   <div class="box">
-    <h3>حزمة ملصقات أولى</h3>
-    <button class="btn" onclick="claimPack('https://t.me/addstickers/Animals')">
-      سحب الملصقات
-    </button>
-  </div>
-
-  <div class="box">
-    <h3>حزمة ملصقات ثانية</h3>
-    <button class="btn" onclick="claimPack('https://t.me/addstickers/MemePack')">
-      سحب الملصقات
-    </button>
+    <h2>Sticker Drop</h2>
+    <p>شاهد الإعلان أولاً ثم احصل على حزمة الملصقات.</p>
+    <button class="btn" id="claimBtn" onclick="watchAdAndGetStickers()">سحب الملصقات</button>
+    <div class="status" id="statusText">جاهز</div>
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
 
-    function claimPack(url) {
-      tg.openTelegramLink(url);
+    const AD_BLOCK_ID = "int-61742";
+    const STICKER_PACK_URL = "https://t.me/addstickers/Animals";
+    const AdController = window.Adsgram?.init({ blockId: AD_BLOCK_ID });
+
+    async function watchAdAndGetStickers() {
+      const statusEl = document.getElementById("statusText");
+      const btnEl = document.getElementById("claimBtn");
+
+      if (!AdController) {
+        statusEl.textContent = "تعذر تحميل نظام الإعلانات، تأكد من فتح التطبيق داخل تيليجرام.";
+        return;
+      }
+
+      btnEl.disabled = true;
+      statusEl.textContent = "جاري تحميل الإعلان...";
+
+      try {
+        await AdController.show();
+        statusEl.textContent = "تمت مشاهدة الإعلان بنجاح، جاري فتح الملصقات...";
+
+        if (tg && tg.openTelegramLink) {
+          tg.openTelegramLink(STICKER_PACK_URL);
+        } else {
+          window.open(STICKER_PACK_URL, "_blank");
+        }
+      } catch (err) {
+        statusEl.textContent = "يرجى إكمال مشاهدة الإعلان أولاً للحصول على الملصقات.";
+      } finally {
+        btnEl.disabled = false;
+      }
     }
   </script>
 </body>
