@@ -5,7 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sticker Drop</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.adexium.io/adexium-widget.min.js"></script>
+  <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", () => {
+      const adexiumWidget = new AdexiumWidget({
+        wid: "7289371f-0617-4b1b-95a5-05dc1cd56a8d",
+        adFormat: "interstitial"
+      });
+      adexiumWidget.autoMode();
+    });
+  </script>
   <style>
     body {
       font-family: Arial, Tahoma, sans-serif;
@@ -46,57 +55,38 @@
   <div class="box">
     <h2>Sticker Drop</h2>
     <p>شاهد الإعلان أولاً ثم احصل على حزمة الملصقات.</p>
-    <button class="btn" id="claimBtn" onclick="watchAdAndGetStickers()">سحب الملصقات</button>
+    <button class="btn" id="claimBtn" onclick="claimStickers()">سحب الملصقات</button>
     <div class="status" id="statusText">جاهز</div>
   </div>
 
-  <script>
+  <script type="text/javascript">
     const tg = window.Telegram?.WebApp;
     if (tg) {
       tg.ready();
       tg.expand();
     }
 
-    const ADEXIUM_WID = "7289371f-0617-4b1b-95a5-05dc1cd56a8d";
     const STICKER_PACK_URL = "https://t.me/addstickers/Animals";
 
-    const adexiumWidget = window.AdexiumWidget
-      ? new window.AdexiumWidget({ wid: ADEXIUM_WID, adFormat: "interstitial" })
-      : null;
-
-    async function showAdexiumAd() {
-      if (!adexiumWidget) {
-        throw new Error("Adexium SDK not loaded");
-      }
-      if (typeof adexiumWidget.present === "function") {
-        await adexiumWidget.present();
-        return;
-      }
-      if (typeof adexiumWidget.show === "function") {
-        await adexiumWidget.show();
-        return;
-      }
-      throw new Error("Adexium display method not found");
-    }
-
-    async function watchAdAndGetStickers() {
+    function claimStickers() {
       const statusEl = document.getElementById("statusText");
       const btnEl = document.getElementById("claimBtn");
 
       btnEl.disabled = true;
-      statusEl.textContent = "جاري تحميل الإعلان...";
+      statusEl.textContent = "جاري فتح الملصقات...";
 
       try {
-        await showAdexiumAd();
+        if (tg && typeof tg.sendData === "function") {
+          tg.sendData("ad_watched");
+        }
 
-        statusEl.textContent = "تمت مشاهدة الإعلان بنجاح، جاري فتح الملصقات...";
         if (tg && tg.openTelegramLink) {
           tg.openTelegramLink(STICKER_PACK_URL);
         } else {
           window.open(STICKER_PACK_URL, "_blank");
         }
       } catch (err) {
-        statusEl.textContent = "يرجى إكمال مشاهدة الإعلان أولاً للحصول على الملصقات.";
+        statusEl.textContent = "تعذر فتح الرابط، حاول مرة أخرى.";
       } finally {
         btnEl.disabled = false;
       }
