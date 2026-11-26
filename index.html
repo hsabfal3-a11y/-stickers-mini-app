@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sticker Drop</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  <script src="https://cdn.adexium.io/adexium-widget.min.js"></script>
   <style>
     body {
       font-family: Arial, Tahoma, sans-serif;
@@ -57,26 +57,39 @@
       tg.expand();
     }
 
-    const AD_BLOCK_ID = "int-61742";
+    const ADEXIUM_WID = "7289371f-0617-4b1b-95a5-05dc1cd56a8d";
     const STICKER_PACK_URL = "https://t.me/addstickers/Animals";
-    const AdController = window.Adsgram?.init({ blockId: AD_BLOCK_ID });
+
+    const adexiumWidget = window.AdexiumWidget
+      ? new window.AdexiumWidget({ wid: ADEXIUM_WID, adFormat: "interstitial" })
+      : null;
+
+    async function showAdexiumAd() {
+      if (!adexiumWidget) {
+        throw new Error("Adexium SDK not loaded");
+      }
+      if (typeof adexiumWidget.present === "function") {
+        await adexiumWidget.present();
+        return;
+      }
+      if (typeof adexiumWidget.show === "function") {
+        await adexiumWidget.show();
+        return;
+      }
+      throw new Error("Adexium display method not found");
+    }
 
     async function watchAdAndGetStickers() {
       const statusEl = document.getElementById("statusText");
       const btnEl = document.getElementById("claimBtn");
 
-      if (!AdController) {
-        statusEl.textContent = "تعذر تحميل نظام الإعلانات، تأكد من فتح التطبيق داخل تيليجرام.";
-        return;
-      }
-
       btnEl.disabled = true;
       statusEl.textContent = "جاري تحميل الإعلان...";
 
       try {
-        await AdController.show();
-        statusEl.textContent = "تمت مشاهدة الإعلان بنجاح، جاري فتح الملصقات...";
+        await showAdexiumAd();
 
+        statusEl.textContent = "تمت مشاهدة الإعلان بنجاح، جاري فتح الملصقات...";
         if (tg && tg.openTelegramLink) {
           tg.openTelegramLink(STICKER_PACK_URL);
         } else {
