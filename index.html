@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -9,8 +10,8 @@
   <!-- Telegram Web App -->
   <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
-  <!-- Adexium Ads SDK -->
-  <script src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
+  <!-- TADS Ads SDK -->
+  <script src="https://w.tads.me/widget.js"></script>
 
   <style>
     :root {
@@ -141,6 +142,17 @@
       text-align: center;
     }
 
+    /* TADS advertisement area */
+    .ad-section {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+
+    #tads-container-13544 {
+      width: 100%;
+    }
+
     .info {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -177,6 +189,7 @@
 
 <body>
   <main class="app">
+
     <header class="top">
       <div class="logo" aria-hidden="true">🎁</div>
       <h1>Sticker Drop</h1>
@@ -193,9 +206,15 @@
       <button class="claim-btn" id="claimBtn" type="button">
         🎉 سحب الملصقات
       </button>
+
       <p class="hint" id="statusText" aria-live="polite">
         مرحباً بك! يتم تجهيز التطبيق...
       </p>
+    </section>
+
+    <!-- TADS TGB Advertisement -->
+    <section class="ad-section">
+      <div id="tads-container-13544"></div>
     </section>
 
     <section class="info" aria-label="معلومات التطبيق">
@@ -203,6 +222,7 @@
         <strong>⚡ سريع وسهل</strong>
         <span>خطوات بسيطة</span>
       </div>
+
       <div class="info-item">
         <strong>💚 مجاني</strong>
         <span>أضف الملصقات إلى تيليجرام</span>
@@ -210,6 +230,7 @@
     </section>
 
     <footer>Sticker Drop · تجربة ملصقات تيليجرام</footer>
+
   </main>
 
   <script>
@@ -217,7 +238,9 @@
       "use strict";
 
       const STICKER_PACK_URL = "https://t.me/addstickers/Animals";
-      const WIDGET_ID = "7289371f-0617-4b1b-95a5-05dc1cd56a8d";
+
+      // TADS Widget ID
+      const TADS_WIDGET_ID = 13544;
 
       const tg = window.Telegram && window.Telegram.WebApp
         ? window.Telegram.WebApp
@@ -246,35 +269,43 @@
         setStatus("التطبيق جاهز. يمكنك فتح حزمة الملصقات.");
       }
 
-      function startAdexium() {
-        if (typeof window.AdexiumWidget !== "function") {
-          console.error("Adexium SDK لم يتم تحميله.");
-          setStatus("تعذر تحميل خدمة الإعلان. يمكنك المحاولة لاحقاً.");
+      // Initialize TADS advertisement
+      function startTads() {
+        if (!window.tads || typeof window.tads.init !== "function") {
+          console.error("TADS SDK لم يتم تحميله.");
           return;
         }
 
         try {
-          const adexiumWidget = new window.AdexiumWidget({
-            wid: WIDGET_ID,
-            adFormat: "interstitial",
-            firstAdImpressionIntervalInSeconds: 10,
-            adImpressionIntervalInSeconds: 45,
+          const adController = window.tads.init({
+            widgetId: TADS_WIDGET_ID,
+            type: "static",
             debug: false,
-            isFullScreen: false
+
+            onAdsNotFound: () => {
+              console.log("TADS: No ads found to show.");
+            }
           });
 
-          // تشغيل الإعلانات تلقائياً وفق إعدادات Adexium.
-          adexiumWidget.autoMode();
+          window.tadsAdController = adController;
 
-          // الاحتفاظ بالمرجع طوال مدة فتح التطبيق.
-          window.adexiumWidget = adexiumWidget;
-          console.log("Adexium autoMode started.");
+          adController.loadAd()
+            .then(() => {
+              return adController.showAd();
+            })
+            .then(() => {
+              console.log("TADS advertisement loaded and displayed.");
+            })
+            .catch((error) => {
+              console.error("TADS advertisement error:", error);
+            });
+
         } catch (error) {
-          console.error("Adexium initialization error:", error);
-          setStatus("حدث خطأ أثناء تشغيل الإعلان. يمكنك المحاولة لاحقاً.");
+          console.error("TADS initialization error:", error);
         }
       }
 
+      // Open sticker pack
       claimBtn.addEventListener("click", () => {
         claimBtn.disabled = true;
         setStatus("جارٍ فتح حزمة الملصقات...");
@@ -283,7 +314,11 @@
           if (tg && typeof tg.openTelegramLink === "function") {
             tg.openTelegramLink(STICKER_PACK_URL);
           } else {
-            window.open(STICKER_PACK_URL, "_blank", "noopener,noreferrer");
+            window.open(
+              STICKER_PACK_URL,
+              "_blank",
+              "noopener,noreferrer"
+            );
           }
         } catch (error) {
           console.error("Opening sticker pack failed:", error);
@@ -296,10 +331,10 @@
         }, 1800);
       });
 
-      document.addEventListener("DOMContentLoaded", () => {
-        startTelegramApp();
-        startAdexium();
-      });
+      // Start application and advertisement
+      startTelegramApp();
+      startTads();
+
     })();
   </script>
 </body>
